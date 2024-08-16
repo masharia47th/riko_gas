@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Manage Categories</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        {{ form.name.label }} {{ form.name(class="form-control") }}
+    </div>
+    <button type="submit" class="btn btn-success">Add Category</button>
+</form>
+
+<h3 class="mt-4">Existing Categories</h3>
+<ul class="list-group">
+    {% for category in categories %}
+    <li class="list-group-item">{{ category.name }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}
