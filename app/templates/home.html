@@ -1,7 +1,11 @@
 {% extends "base.html" %}
-
 {% block content %}
-<h2>Welcome to Riko_Gas</h2>
+<marquee behavior="scroll" direction="left">
+    We are located at: Meru, Kemu, Gakuruine | We deliver Quality & Affordable cooking gas and cooking utilities.
+</marquee>
+
+<h2>Welcome to Riko Gas</h2>
+
 <div class="search-bar">
     <form method="GET" action="{{ url_for('main.search') }}">
         <input type="text" name="q" placeholder="Search for products...">
@@ -9,31 +13,33 @@
     </form>
 </div>
 
-
 <div class="container">
-    <h3>Products</h3>
-    <div class="row">
-        {% for product in products %}
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="{{ product.image_url() }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
-                <div class="card-body">
-                    <h5 class="card-title">{{ product.name }}</h5>
-                    <p class="card-text">{{ product.description }}</p>
-                    <p class="card-text"><strong>Price:</strong> ${{ product.price }}</p>
-                    <p class="card-text"><strong>Stock:</strong> {{ product.stock }}</p>
-                    <form action="{{ url_for('main.add_to_cart', product_id=product.id) }}" method="post">
-                        <button type="submit" class="btn btn-success">Add to Cart</button>
-                    </form>
-                    <form action="{{ url_for('main.buy_now', product_id=product.id) }}" method="post">
-                        <button type="submit" class="btn btn-primary">Buy Now</button>
-                    </form>
-                    
+    <h3>Products by Category</h3>
+    {% for category, products in products_by_category.items() %}
+        <h4 id="{{ category|replace(' ', '_') }}">{{ category }}</h4> <!-- Anchor point for navigation links -->
+        <div class="row">
+            {% for product in products %}
+                <div class="col-md-4">
+                    <div class="card">
+                        <img src="{{ product.image_url() }}" class="card-img-top" alt="{{ product.name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">{{ product.description }}</p>
+                            <p class="card-text"><strong>Price:</strong> Ksh {{ product.price }}</p>
+                            <p class="card-text"><strong>Stock:</strong> {{ product.stock }}</p>
+                            <form action="{{ url_for('main.add_to_cart', product_id=product.id) }}" method="post">
+                                <button type="submit" class="btn btn-success">Add to Cart</button>
+                            </form>
+                            <form action="{{ url_for('main.buy_now', product_id=product.id) }}" method="post">
+                                <button type="submit" class="btn btn-primary">Buy Now</button>
+                            </form>
+                            <a href="tel:+254710166796" class="btn btn-info">Call Us</a>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
+    {% endfor %}
 </div>
 
 {% endblock %}

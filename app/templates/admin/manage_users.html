@@ -1,29 +1,49 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Manage Users</h2>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for user in users %}
-        <tr>
-            <td>{{ user.username }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.role }}</td>
-            <td>
-                <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-primary btn-sm">Edit</a>
-                <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="manage-users-container">
+    <h2 class="section-title">Manage Users</h2>
+    <div class="table-responsive">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.role }}</td>
+                    <td class="action-buttons">
+                        <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-primary">Edit</a>
+                        <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="POST" class="inline-form">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="add-user-container">
+    <h3 class="section-title">Add New User</h3>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.username.label }} {{ form.username(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.email.label }} {{ form.email(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.role.label }} {{ form.role(class="form-control") }}
+        </div>
+        <button type="submit" class="btn btn-success">Add User</button>
+    </form>
+</div>
 {% endblock %}

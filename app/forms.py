@@ -67,10 +67,11 @@ class ProductForm(FlaskForm):
 
 # User Management Form
 class UserManagementForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=150)])
+    username = StringField('Username', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    role = SelectField('Role', choices=[('buyer', 'Buyer'), ('admin', 'Admin')], default='buyer')
-    submit = SubmitField('Update User')
+    role = SelectField('Role', choices=[('admin', 'Admin'), ('employee', 'Employee')], validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
+    submit = SubmitField('Submit')
 
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()

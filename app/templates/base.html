@@ -5,23 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Riko_Gas</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
 </head>
 <body>
     <header>
         <nav>
-            <a href="{{ url_for('main.home') }}">Home</a>
-            <a href="{{ url_for('main.login') }}">Login</a>
-            <a href="">Register</a>
-            {% if current_user.is_authenticated %}
-            {% if current_user.role == 'admin' %}
-            <li><a href="{{ url_for('admin.manage_users') }}">Manage Users</a></li>
-            <li><a href="{{ url_for('admin.manage_products') }}">Manage Products</a></li>
-            <li><a href="{{ url_for('admin.manage_categories') }}">Manage Categories</a></li>
-            <li><a href="{{ url_for('admin.view_payments') }}">View Payments</a></li>
-            <li><a href="{{ url_for('admin.view_reports') }}">View Reports</a></li>
-            {% endif %}
-            <a href="{{ url_for('main.logout') }}">Logout</a>
-        {% endif %}
+            <ul>
+                <li><a href="{{ url_for('main.home') }}">Home</a></li>
+
+                {% for category in categories %}
+                    <li><a href="{{ url_for('main.home') }}#{{ category.name|replace(' ', '_') }}">{{ category.name }}</a></li>
+                {% endfor %}
+
+                {% if not current_user.is_authenticated %}
+                <li><a href="{{ url_for('main.login') }}">Login</a></li>
+                <li><a href="{{ url_for('main.register') }}">Register</a></li>
+                {% endif %}
+                {% if current_user.is_authenticated %}
+                    {% if current_user.role == 'admin' %}
+                        <li><a href="{{ url_for('admin.manage_users') }}">Manage Users</a></li>
+                        <li><a href="{{ url_for('admin.manage_products') }}">Manage Products</a></li>
+                        <li><a href="{{ url_for('admin.manage_categories') }}">Manage Categories</a></li>
+                        <li><a href="{{ url_for('admin.view_payments') }}">View Payments</a></li>
+                        <li><a href="{{ url_for('admin.view_reports') }}">View Reports</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('main.logout') }}">Logout</a></li>
+                {% endif %}
+            </ul>
         </nav>
 
         <h1>Riko_Gas</h1>
@@ -40,6 +50,28 @@
     </div>
     <footer>
         <p>&copy; 2024 Riko_Gas. All rights reserved.</p>
+        <p>
+            Contact us on:
+            <i class="fa-brands fa-facebook" href="https://facebook.com/yourprofile" target="_blank"></i> |
+            <i class="fa-brands fa-x-twitter" href="https://x.com/yourprofile"  target="_blank"></i>|
+            <i class="fa-brands fa-whatsapp" href="https://whatsapp.com/yourprofile" target="_blank"></i>
+        </p>
     </footer>
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollTopBtn" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">↑</button>
+
+    <script>
+        // Show or hide the scroll-to-top button based on scroll position
+        window.onscroll = function() {
+            var scrollTopBtn = document.getElementById('scrollTopBtn');
+            if (document.body.scrollTop > 50 || document.documentElement.scrollTop > 50) {
+                scrollTopBtn.style.display = 'block';
+            } else {
+                scrollTopBtn.style.display = 'none';
+            }
+        };
+    </script>
+    <script src="https://kit.fontawesome.com/41853f33a6.js" crossorigin="anonymous"></script>
 </body>
 </html>

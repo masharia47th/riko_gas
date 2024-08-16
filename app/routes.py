@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash,current_app
 from flask_login import login_user, logout_user, current_user, login_required
 from . import db
-from .forms import CategoryForm, ProductForm, UserManagementForm
+from .forms import *
 from .models import Category, Product, User, db,Payment,Cart, Order, OrderItem
 from werkzeug.security import generate_password_hash
 import os
@@ -11,10 +11,10 @@ main = Blueprint('main', __name__)
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
 @main.route('/')
-@main.route('/home/')
 def home():
-    products = Product.query.all()
-    return render_template('home.html', products=products)
+    categories = Category.query.all()
+    products_by_category = {category.name: Product.query.filter_by(category_id=category.id).all() for category in categories}
+    return render_template('home.html', products_by_category=products_by_category, categories=categories)
 
 @main.route('/search')
 def search():
@@ -65,7 +65,7 @@ def register():
 @main.route('/logout')
 def logout():
     logout_user()
-    flash('You have been logged out.', 'info')
+    flash('You have been logged out.', 'success')
     return redirect(url_for('main.home'))
 
 
@@ -199,18 +199,29 @@ def admin_only():
         return redirect(url_for('main.home'))
 
 # Manage Users
-@admin.route('/manage_users')
+@admin.route('/manage_users', methods=['GET', 'POST'])
 @login_required
 def manage_users():
     admin_only()
+    form = UserManagementForm()  # Define the form
+    if form.validate_on_submit():
+        new_user = User(
+            username=form.username.data,
+            email=form.email.data,
+            role=form.role.data
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        flash('New user added successfully!', 'success')
+        return redirect(url_for('admin.manage_users'))
+    
     users = User.query.all()
-    return render_template('admin/manage_users.html', users=users)
+    return render_template('admin/manage_users.html', users=users, form=form)
 
 # Manage Products
 
 @admin.route('/manage_products', methods=['GET', 'POST'])
 @login_required
-
 def manage_products():
     admin_only()
     if current_user.role != 'admin':
@@ -247,6 +258,59 @@ def manage_products():
     products = Product.query.all()
     return render_template('admin/manage_products.html', products=products, form=form)
 
+
+@admin.route('/edit_product/<int:product_id>', methods=['GET', 'POST'])
+@login_required
+def edit_product(product_id):
+    admin_only()
+    product = Product.query.get_or_404(product_id)
+
+    if current_user.role != 'admin':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('main.home'))
+
+    form = ProductForm(obj=product)
+    if form.validate_on_submit():
+        if form.image.data:
+            uploads_dir = current_app.config['UPLOAD_FOLDER']
+            if not os.path.exists(uploads_dir):
+                os.makedirs(uploads_dir)
+
+            image_file = secure_filename(form.image.data.filename)
+            image_path = os.path.join(uploads_dir, image_file)
+            form.image.data.save(image_path)
+        else:
+            image_file = product.image_file
+
+        product.name = form.name.data
+        product.description = form.description.data
+        product.price = form.price.data
+        product.stock = form.stock.data
+        product.category_id = form.category.data
+        product.image_file = image_file
+
+        db.session.commit()
+        flash('Product updated successfully!', 'success')
+        return redirect(url_for('admin.manage_products'))
+
+    return render_template('admin/edit_product.html', form=form, product=product)
+
+
+@admin.route('/delete_product/<int:product_id>', methods=['POST'])
+@login_required
+def delete_product(product_id):
+    admin_only()
+    product = Product.query.get_or_404(product_id)
+
+    if current_user.role != 'admin':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('main.home'))
+
+    db.session.delete(product)
+    db.session.commit()
+    flash('Product deleted successfully!', 'success')
+    return redirect(url_for('admin.manage_products'))
+
 # Manage Categories
 @admin.route('/manage_categories', methods=['GET', 'POST'])
 @login_required
@@ -262,6 +326,36 @@ def manage_categories():
     
     categories = Category.query.all()
     return render_template('admin/manage_categories.html', form=form, categories=categories)
+
+
+@admin.route('/edit_category/<int:category_id>', methods=['GET', 'POST'])
+@login_required
+def edit_category(category_id):
+    admin_only()
+    category = Category.query.get_or_404(category_id)
+    form = CategoryForm()
+
+    if form.validate_on_submit():
+        category.name = form.name.data
+        db.session.commit()
+        flash('Category updated successfully!', 'success')
+        return redirect(url_for('admin.manage_categories'))
+    
+    elif request.method == 'GET':
+        form.name.data = category.name
+    
+    return render_template('admin/edit_category.html', form=form, category=category)
+
+
+@admin.route('/delete_category/<int:category_id>', methods=['POST'])
+@login_required
+def delete_category(category_id):
+    admin_only()
+    category = Category.query.get_or_404(category_id)
+    db.session.delete(category)
+    db.session.commit()
+    flash('Category deleted successfully.', 'success')
+    return redirect(url_for('admin.manage_categories'))
 
 # View Payments
 @admin.route('/view_payments')
@@ -308,3 +402,17 @@ def delete_user(user_id):
     db.session.commit()
     flash('User deleted successfully.', 'success')
     return redirect(url_for('admin.manage_users'))
+
+@admin.route('/add_user', methods=['GET', 'POST'])
+@login_required
+def add_user():
+    admin_only()
+    form = UserManagementForm()
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        new_user = User(username=form.username.data, email=form.email.data, role=form.role.data, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+        flash('User added successfully!', 'success')
+        return redirect(url_for('admin.manage_users'))
+    return render_template('admin/add_user.html', form=form)
