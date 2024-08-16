@@ -39,13 +39,10 @@ header .container {
     align-items: center;
 }
 
-.logo {
-    font-size: 2rem;
-    font-weight: bold;
-}
 
 nav ul {
     display: flex;
+    align-items: center;
     list-style: none;
 }
 
@@ -553,3 +550,42 @@ h3, h4 {
 
 
 
+.logo-container {
+    width: 150px; /* Set the width to match the image */
+    height: auto; /* Maintain aspect ratio */
+    display: flex;
+    justify-content: flex-end; /* Align content to the right */
+    margin: 10px 20px 10px 0; /* Margin around the container */
+}
+
+.logo-image {
+    width: 100%; /* Make the image fill the container */
+    height: auto; /* Maintain aspect ratio */
+    border-radius: 10px; /* Rounded edges */
+    transition: transform 0.3s ease; /* Smooth hover effect */
+    object-fit: cover; /* Ensure image scales properly */
+}
+
+.logo-image:hover {
+    transform: scale(1.1); /* Slight zoom on hover */
+}
+
+@media (max-width: 768px) {
+    .logo-container {
+        width: 120px; /* Adjust container size for tablets */
+    }
+
+    .logo-image {
+        width: 100%; /* Ensure image fills the adjusted container */
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-container {
+        width: 100px; /* Adjust container size for mobile */
+    }
+
+    .logo-image {
+        width: 100%; /* Ensure image fills the adjusted container */
+    }
+}

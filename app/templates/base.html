@@ -9,6 +9,9 @@
 </head>
 <body>
     <header>
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='images/riko.png') }}" alt="Riko_Gas Logo" class="logo-image">
+        </div>
         <nav>
             <ul>
                 <li><a href="{{ url_for('main.home') }}">Home</a></li>
@@ -34,7 +37,8 @@
             </ul>
         </nav>
 
-        <h1>Riko_Gas</h1>
+
+                
     </header>
     <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
