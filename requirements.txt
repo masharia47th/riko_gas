@@ -5,3 +5,6 @@ flask-wtf
 flask-bcrypt
 email_validator
 flask_migrate
+fuzzywuzzy[speedup]
+python-Levenshtein
+

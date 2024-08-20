@@ -9,37 +9,40 @@
 </head>
 <body>
     <header>
-        <div class="logo-container">
-            <img src="{{ url_for('static', filename='images/riko.png') }}" alt="Riko_Gas Logo" class="logo-image">
-        </div>
-        <nav>
-            <ul>
-                <li><a href="{{ url_for('main.home') }}">Home</a></li>
-
-                {% for category in categories %}
-                    <li><a href="{{ url_for('main.home') }}#{{ category.name|replace(' ', '_') }}">{{ category.name }}</a></li>
-                {% endfor %}
-
-                {% if not current_user.is_authenticated %}
-                <li><a href="{{ url_for('main.login') }}">Login</a></li>
-                <li><a href="{{ url_for('main.register') }}">Register</a></li>
-                {% endif %}
-                {% if current_user.is_authenticated %}
-                    {% if current_user.role == 'admin' %}
-                        <li><a href="{{ url_for('admin.manage_users') }}">Manage Users</a></li>
-                        <li><a href="{{ url_for('admin.manage_products') }}">Manage Products</a></li>
-                        <li><a href="{{ url_for('admin.manage_categories') }}">Manage Categories</a></li>
-                        <li><a href="{{ url_for('admin.view_payments') }}">View Payments</a></li>
-                        <li><a href="{{ url_for('admin.view_reports') }}">View Reports</a></li>
+        <div class="container">
+            <div class="logo-container">
+                <img src="{{ url_for('static', filename='images/riko.png') }}" alt="Riko_Gas Logo" class="logo-image">
+            </div>
+            <button class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <nav id="nav-menu">
+                <ul>
+                    <li><a href="{{ url_for('main.home') }}">Home</a></li>
+                    {% for category in categories %}
+                        <li><a href="{{ url_for('main.home') }}#{{ category.name|replace(' ', '_') }}">{{ category.name }}</a></li>
+                    {% endfor %}
+                    {% if not current_user.is_authenticated %}
+                    <li><a href="{{ url_for('main.login') }}">Login</a></li>
+                    <li><a href="{{ url_for('main.register') }}">Register</a></li>
                     {% endif %}
-                    <li><a href="{{ url_for('main.logout') }}">Logout</a></li>
-                {% endif %}
-            </ul>
-        </nav>
-
-
-                
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.role == 'admin' %}
+                            <li><a href="{{ url_for('admin.manage_users') }}">Manage Users</a></li>
+                            <li><a href="{{ url_for('admin.manage_products') }}">Manage Products</a></li>
+                            <li><a href="{{ url_for('admin.manage_categories') }}">Manage Categories</a></li>
+                            <li><a href="{{ url_for('admin.view_payments') }}">View Payments</a></li>
+                            <li><a href="{{ url_for('admin.view_reports') }}">View Reports</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('main.logout') }}">Logout</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
     </header>
+
     <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -75,7 +78,47 @@
                 scrollTopBtn.style.display = 'none';
             }
         };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburger = document.getElementById('hamburger');
+            const navMenu = document.getElementById('nav-menu');
+
+        // Function to close the menu
+        function closeMenu() {
+            navMenu.classList.remove('active');
+            hamburger.classList.remove('active');
+        }
+
+        // Toggle menu when hamburger is clicked
+        hamburger.addEventListener('click', function(event) {
+            event.stopPropagation();
+            navMenu.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const isClickInsideMenu = navMenu.contains(event.target);
+            const isClickOnHamburger = hamburger.contains(event.target);
+            
+            if (!isClickInsideMenu && !isClickOnHamburger && navMenu.classList.contains('active')) {
+                closeMenu();
+            }
+        });
+
+        // Close menu when scrolling
+        let lastScrollTop = 0;
+        window.addEventListener('scroll', function() {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            if (scrollTop > lastScrollTop) {
+                // Scrolling down
+                closeMenu();
+            }
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
+        }, false);
+    });
+
     </script>
-    <script src="https://kit.fontawesome.com/41853f33a6.js" crossorigin="anonymous"></script>
-</body>
+
+    <script src="https://kit.fontawesome.com/41853f33a6.js" crossorigin="anonymous"></script></body>
 </html>

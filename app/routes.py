@@ -6,6 +6,8 @@ from .models import Category, Product, User, db,Payment,Cart, Order, OrderItem
 from werkzeug.security import generate_password_hash
 import os
 from werkzeug.utils import secure_filename
+from fuzzywuzzy import process
+
 
 main = Blueprint('main', __name__)
 admin = Blueprint('admin', __name__, url_prefix='/admin')
@@ -16,15 +18,28 @@ def home():
     products_by_category = {category.name: Product.query.filter_by(category_id=category.id).all() for category in categories}
     return render_template('home.html', products_by_category=products_by_category, categories=categories)
 
+
+
 @main.route('/search')
 def search():
     query = request.args.get('q')
     products = []
+    categories = Category.query.all()
+    products_by_category = {}  # Initialize an empty dictionary for consistency
+
     if query:
-        products = Product.query.filter(Product.name.contains(query)).all()
-        if not products:
-            products = Product.query.filter(Product.description.contains(query)).all()
-    return render_template('home.html', products=products)
+        # Get all product names
+        all_products = Product.query.all()
+        product_names = [product.name for product in all_products]
+
+        # Use fuzzy matching to find the closest matches to the query
+        matches = process.extract(query, product_names, limit=10)  # You can adjust the limit
+
+        # Extract product objects based on the matched names
+        matched_names = [match[0] for match in matches]
+        products = [product for product in all_products if product.name in matched_names]
+
+    return render_template('home.html', products_by_category=products_by_category, categories=categories, products=products)
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
@@ -166,26 +181,24 @@ def checkout():
 @main.route('/buy_now/<int:product_id>', methods=['POST'])
 @login_required
 def buy_now(product_id):
-    # Your existing logic for handling the buy now action
     product = Product.query.get_or_404(product_id)
     
     # Create a new order
     new_order = Order(
         user_id=current_user.id,
-        total_price=product.price,  # Adjust as needed for multiple items
+        total_price=product.price,  
     )
     db.session.add(new_order)
-    db.session.commit()  # Commit to get the order_id
+    db.session.commit() 
 
-    # Add an order item for the product
     order_item = OrderItem(
         order_id=new_order.id,
         product_id=product.id,
-        quantity=1,  # Adjust quantity as needed
+        quantity=1,  
         price=product.price
     )
     db.session.add(order_item)
-    db.session.commit()  # Commit to save the order item
+    db.session.commit()  
 
     flash('Order placed successfully!', 'success')
     return redirect(url_for('main.home'))
